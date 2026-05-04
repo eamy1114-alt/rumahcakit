@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\LogAktivitas;
+use App\Helpers\CaptchaHelper;  // 🔥 TAMBAHKAN INI
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -32,8 +33,14 @@ class LoginController extends Controller
     {
         $credentials = $request->validate([
             'username' => 'required|string',
-            'password' => 'required|string'
+            'password' => 'required|string',
+            'captcha' => 'required|string'  // 🔥 TAMBAHKAN VALIDASI CAPTCHA
         ]);
+
+        // 🔥 VALIDASI CAPTCHA
+        if (!CaptchaHelper::validate($request->captcha)) {
+            return back()->withErrors(['captcha' => 'Kode captcha yang Anda masukkan salah.'])->withInput();
+        }
 
         if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']])) {
             $user = Auth::user();
@@ -55,8 +62,14 @@ class LoginController extends Controller
     {
         $request->validate([
             'id_dokter' => 'required|string',
-            'password' => 'required|string'
+            'password' => 'required|string',
+            'captcha' => 'required|string'  // 🔥 TAMBAHKAN VALIDASI CAPTCHA
         ]);
+
+        // 🔥 VALIDASI CAPTCHA
+        if (!CaptchaHelper::validate($request->captcha)) {
+            return back()->withErrors(['captcha' => 'Kode captcha yang Anda masukkan salah.'])->withInput();
+        }
 
         $user = User::where('id_dokter', $request->id_dokter)->first();
 
@@ -79,8 +92,14 @@ class LoginController extends Controller
     {
         $credentials = $request->validate([
             'username' => 'required|string',
-            'password' => 'required|string'
+            'password' => 'required|string',
+            'captcha' => 'required|string'  // 🔥 TAMBAHKAN VALIDASI CAPTCHA
         ]);
+
+        // 🔥 VALIDASI CAPTCHA
+        if (!CaptchaHelper::validate($request->captcha)) {
+            return back()->withErrors(['captcha' => 'Kode captcha yang Anda masukkan salah.'])->withInput();
+        }
 
         if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']])) {
             $user = Auth::user();
@@ -102,8 +121,14 @@ class LoginController extends Controller
     {
         $credentials = $request->validate([
             'username' => 'required|string',
-            'password' => 'required|string'
+            'password' => 'required|string',
+            'captcha' => 'required|string'  // 🔥 TAMBAHKAN VALIDASI CAPTCHA
         ]);
+
+        // 🔥 VALIDASI CAPTCHA
+        if (!CaptchaHelper::validate($request->captcha)) {
+            return back()->withErrors(['captcha' => 'Kode captcha yang Anda masukkan salah.'])->withInput();
+        }
 
         if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']])) {
             $user = Auth::user();
