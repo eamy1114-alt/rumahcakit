@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\LogAktivitas;
-use App\Helpers\CaptchaHelper;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -25,7 +25,7 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Register Pasien (dengan CAPTCHA)
+     * Register Pasien (Tanpa CAPTCHA + Verifikasi Email)
      */
     public function storePasien(Request $request)
     {
@@ -36,15 +36,12 @@ class RegisteredUserController extends Controller
             'username' => 'required|string|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
             'tanggal_lahir' => 'required|date',
-            'captcha' => 'required|string'
+            // 🔥 HAPUS validasi 'captcha'
         ]);
 
-        // Validasi CAPTCHA
-        if (!CaptchaHelper::validate($request->captcha)) {
-            return back()->withErrors(['captcha' => 'Kode captcha yang Anda masukkan salah.'])->withInput();
-        }
+        // 🔥 HAPUS validasi CAPTCHA
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'nik' => $request->nik,
             'email' => $request->email,
@@ -54,12 +51,14 @@ class RegisteredUserController extends Controller
             'role' => 'pasien'
         ]);
 
+        event(new Registered($user));
+
         return redirect()->route('login.pasien')
-            ->with('success', 'Registrasi berhasil! Silakan login.');
+            ->with('success', 'Registrasi berhasil! Silakan cek email untuk verifikasi.');
     }
 
     /**
-     * Register Dokter (dengan CAPTCHA)
+     * Register Dokter (Tanpa CAPTCHA + Verifikasi Email)
      */
     public function storeDokter(Request $request)
     {
@@ -69,15 +68,10 @@ class RegisteredUserController extends Controller
             'poli' => 'required|string',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
-            'captcha' => 'required|string'
+            // 🔥 HAPUS validasi 'captcha'
         ]);
 
-        // Validasi CAPTCHA
-        if (!CaptchaHelper::validate($request->captcha)) {
-            return back()->withErrors(['captcha' => 'Kode captcha yang Anda masukkan salah.'])->withInput();
-        }
-
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'id_dokter' => $request->id_dokter,
             'poli' => $request->poli,
@@ -87,12 +81,14 @@ class RegisteredUserController extends Controller
             'role' => 'dokter'
         ]);
 
+        event(new Registered($user));
+
         return redirect()->route('login.dokter')
-            ->with('success', 'Registrasi dokter berhasil! Silakan login.');
+            ->with('success', 'Registrasi dokter berhasil! Silakan cek email untuk verifikasi.');
     }
 
     /**
-     * Register Admin (dengan CAPTCHA)
+     * Register Admin (Tanpa CAPTCHA + Verifikasi Email)
      */
     public function storeAdmin(Request $request)
     {
@@ -101,15 +97,10 @@ class RegisteredUserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'username' => 'required|string|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
-            'captcha' => 'required|string'
+            // 🔥 HAPUS validasi 'captcha'
         ]);
 
-        // Validasi CAPTCHA
-        if (!CaptchaHelper::validate($request->captcha)) {
-            return back()->withErrors(['captcha' => 'Kode captcha yang Anda masukkan salah.'])->withInput();
-        }
-
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'username' => $request->username,
@@ -117,12 +108,14 @@ class RegisteredUserController extends Controller
             'role' => 'admin'
         ]);
 
+        event(new Registered($user));
+
         return redirect()->route('login.admin')
-            ->with('success', 'Registrasi admin berhasil! Silakan login.');
+            ->with('success', 'Registrasi admin berhasil! Silakan cek email untuk verifikasi.');
     }
 
     /**
-     * Register Perawat (dengan CAPTCHA)
+     * Register Perawat (Tanpa CAPTCHA + Verifikasi Email)
      */
     public function storePerawat(Request $request)
     {
@@ -131,25 +124,22 @@ class RegisteredUserController extends Controller
             'id_perawat' => 'required|string|unique:users,id_dokter',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
-            'captcha' => 'required|string'
+            // 🔥 HAPUS validasi 'captcha'
         ]);
 
-        // Validasi CAPTCHA
-        if (!CaptchaHelper::validate($request->captcha)) {
-            return back()->withErrors(['captcha' => 'Kode captcha yang Anda masukkan salah.'])->withInput();
-        }
-
-        User::create([
+        $user = User::create([
             'name' => $request->name,
-            'id_dokter' => $request->id_perawat,  // Simpan ID Perawat di kolom id_dokter
+            'id_dokter' => $request->id_perawat,
             'email' => $request->email,
-            'username' => $request->id_perawat,   // Username = ID Perawat
+            'username' => $request->id_perawat,
             'password' => Hash::make($request->password),
             'role' => 'perawat',
             'poli' => null
         ]);
 
+        event(new Registered($user));
+
         return redirect()->route('login.perawat')
-            ->with('success', 'Registrasi perawat berhasil! Silakan login.');
+            ->with('success', 'Registrasi perawat berhasil! Silakan cek email untuk verifikasi.');
     }
 }

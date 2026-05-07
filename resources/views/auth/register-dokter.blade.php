@@ -53,24 +53,6 @@
             border-radius: 6px;
             margin-bottom: 15px;
         }
-        .captcha-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-top: 5px;
-            flex-wrap: wrap;
-        }
-        .captcha-img {
-            border-radius: 8px;
-            border: 1px solid #c9c9c9;
-        }
-        .refresh-btn {
-            background: #e0f2f1;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -107,28 +89,11 @@
             <label>Konfirmasi Password</label>
             <input type="password" name="password_confirmation" required>
 
-            <!-- CAPTCHA -->
-            <label>Kode Captcha *</label>
-            <div class="captcha-container">
-                <img src="{{ url('/captcha') }}" alt="Captcha" id="captcha-img" class="captcha-img">
-                <button type="button" class="refresh-btn" onclick="refreshCaptcha()">🔄 Refresh</button>
-            </div>
-            <input type="text" name="captcha" placeholder="Masukkan kode di atas" required>
-            @error('captcha')
-                <span style="color: red; font-size: 12px;">{{ $message }}</span>
-            @enderror
-
             <button type="submit" class="btn">Daftar Sekarang</button>
         </form>
         <div class="back">
             <a href="{{ url('/home') }}">← Kembali ke Beranda</a>
         </div>
     </div>
-
-    <script>
-        function refreshCaptcha() {
-            document.getElementById('captcha-img').src = "{{ url('/captcha') }}?" + Math.random();
-        }
-    </script>
 </body>
 </html>

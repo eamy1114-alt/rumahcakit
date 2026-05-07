@@ -12,12 +12,32 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\LogActivityController;
 use App\Http\Controllers\KeluhanController;
 use App\Helpers\CaptchaHelper;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
+
+// ============================================
+// LOGIN REDIRECT ROUTE (Halaman pilihan login)
+// ============================================
+Route::get('/login', function () {
+    return view('auth.login-options');
+})->name('login');
+
+// ============================================
+// DASHBOARD REDIRECT ROUTE
+// ============================================
+Route::get('/dashboard', function () {
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+    $role = auth()->user()->role;
+    return redirect()->route("dashboard.{$role}");
+})->name('dashboard');
 
 // ============================================
 // HOME ROUTES
@@ -42,6 +62,28 @@ Route::get('/captcha', function () {
     return response($builder->get())
         ->header('Content-Type', 'image/jpeg');
 })->name('captcha');
+
+// ============================================
+// VERIFIKASI EMAIL ROUTES (Laravel Default)
+// ============================================
+Route::middleware(['auth'])->group(function () {
+    // Halaman pemberitahuan verifikasi email
+    Route::get('/email/verify', function () {
+        return view('auth.verify-email');
+    })->name('verification.notice');
+    
+    // Proses verifikasi email (dari link di email)
+    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+        $request->fulfill();
+        return redirect()->route('dashboard');
+    })->middleware(['signed'])->name('verification.verify');
+    
+    // Kirim ulang email verifikasi
+    Route::post('/email/verification-notification', function (Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('success', 'Link verifikasi baru telah dikirim!');
+    })->middleware(['throttle:6,1'])->name('verification.send');
+});
 
 // ============================================
 // AUTH ROUTES (Login & Register)
@@ -85,9 +127,9 @@ Route::post('/logout', function () {
 })->name('logout');
 
 // ============================================
-// DASHBOARD ROUTES
+// DASHBOARD ROUTES (DENGAN MIDDLEWARE AUTH + VERIFIED)
 // ============================================
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/admin', [DashboardController::class, 'admin'])
         ->name('dashboard.admin')
         ->middleware('role:admin');
@@ -142,7 +184,7 @@ Route::middleware(['auth'])->group(function () {
             ->get();
     });
     
-    // API untuk mengambil rekam medis per pasien (hanya yang memiliki akses)
+    // API untuk mengambil rekam medis per pasien
     Route::get('/api/rekam-medis/pasien/{pasienId}', function ($pasienId) {
         return App\Models\RekamMedis::where('pasien_id', $pasienId)
             ->with('dokter')
@@ -150,7 +192,7 @@ Route::middleware(['auth'])->group(function () {
             ->get();
     });
     
-    // 🔥 TAMBAHAN: API untuk mengambil SEMUA rekam medis pasien (tanpa cek akses)
+    // API untuk mengambil SEMUA rekam medis pasien (tanpa cek akses)
     Route::get('/api/rekam-medis/semua/{pasienId}', [AksesController::class, 'lihatSemuaRekamMedis']);
     
     // API untuk mengambil permintaan akses pasien
