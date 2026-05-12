@@ -38,25 +38,39 @@ class DashboardController extends Controller
         ));
     }
 
+    
     /**
      * Dashboard Dokter
-     * Menampilkan pasien dengan status 'diproses' (sudah dikirim perawat)
+     * Menampilkan pasien sesuai dokter yang login
      */
     public function dokter()
     {
-        // 🔥 PERUBAHAN: Hanya tampilkan pasien dengan status 'diproses'
-        $antrianPasien = Pasien::where('status', 'diproses')->get();
-        
-        $totalPasien = Pasien::count();
-        $totalRekamMedis = RekamMedis::where('dokter_id', auth()->id())->count();
-        $rekamMedisTerbaru = RekamMedis::where('dokter_id', auth()->id())
+        $dokterId = auth()->id();
+
+    // 🔥 HANYA pasien milik dokter yang login
+        $antrianPasien = Pasien::where('status', 'diproses')
+            ->where('dokter_id', $dokterId)
+            ->latest()
+            ->get();
+
+    // 🔥 Total pasien dokter ini saja
+        $totalPasien = Pasien::where('dokter_id', $dokterId)->count();
+
+    // 🔥 Rekam medis dokter ini
+        $totalRekamMedis = RekamMedis::where('dokter_id', $dokterId)->count();
+
+    // 🔥 Rekam medis terbaru dokter ini
+        $rekamMedisTerbaru = RekamMedis::where('dokter_id', $dokterId)
             ->latest()
             ->limit(5)
             ->with('pasien')
             ->get();
-        
+
         return view('dashboard.dokter', compact(
-            'antrianPasien', 'totalPasien', 'totalRekamMedis', 'rekamMedisTerbaru'
+            'antrianPasien',
+            'totalPasien',
+            'totalRekamMedis',
+            'rekamMedisTerbaru'
         ));
     }
 

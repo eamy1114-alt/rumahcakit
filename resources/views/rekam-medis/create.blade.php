@@ -150,8 +150,15 @@
                         <input type="file" name="hasil_lab" accept="application/pdf">
                     </div>
                     <div class="rekam-item">
-                        <label>Nama Dokter</label>
-                        <input type="text" value="dr. {{ auth()->user()->name ?? 'Eka Aditya' }}" readonly>
+                        <label>Dokter *</label>
+                        <select name="dokter_id" required>
+                            <option value="">-- Pilih Dokter --</option>
+                            @foreach($dokters as $dokter)
+                                <option value="{{ $dokter->id }}">
+                                    dr. {{ $dokter->name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="rekam-item">
                         <label>Rumah Sakit</label>

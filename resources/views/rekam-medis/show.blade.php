@@ -41,6 +41,7 @@
             text-decoration: none;
             display: inline-block;
             margin-top: 20px;
+            
         }
         .btn-warning {
             background: #ffb74d;
@@ -59,6 +60,9 @@
     </style>
 </head>
 <body>
+    @php
+    use Illuminate\Support\Facades\Storage;
+    @endphp
     <header>
         <h2>📋 Detail Rekam Medis</h2>
         <div>
@@ -84,15 +88,19 @@
             <div class="info"><strong>Rumah Sakit:</strong> {{ $rekamMedis->rumah_sakit }}</div>
             <div class="info"><strong>Dokter:</strong> {{ $rekamMedis->dokter->name ?? '-' }}</div>
             
-            <!-- Foto Rontgen -->
+           <!-- Foto Rontgen -->
             @if($rekamMedis->foto_rontgen)
+
+            {{ dd(Storage::url($rekamMedis->foto_rontgen)) }}
+
             <div class="info"><strong>Foto Rontgen:</strong></div>
-            <a href="{{ asset('storage/' . $rekamMedis->foto_rontgen) }}" target="_blank" class="btn btn-warning">
+
+            <a href="{{ Storage::url($rekamMedis->foto_rontgen) }}" target="_blank" class="btn btn-warning">
                 📷 Lihat Rontgen
             </a>
+
             <br>
             @endif
-            
             <!-- Hasil Lab -->
             @if($rekamMedis->hasil_lab)
             <div class="info"><strong>Hasil Lab:</strong></div>

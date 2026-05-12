@@ -21,6 +21,7 @@ class RekamMedisController extends Controller
     public function create($pasienId)
     {
         $pasien = Pasien::findOrFail($pasienId);
+        $dokters = User::where('role', 'dokter')->get();
         return view('rekam-medis.create', compact('pasien'));
     }
 

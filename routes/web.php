@@ -12,6 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\LogActivityController;
 use App\Http\Controllers\KeluhanController;
 use App\Helpers\CaptchaHelper;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
@@ -67,6 +68,7 @@ Route::get('/captcha', function () {
 // VERIFIKASI EMAIL ROUTES (Laravel Default)
 // ============================================
 Route::middleware(['auth'])->group(function () {
+    
     // Halaman pemberitahuan verifikasi email
     Route::get('/email/verify', function () {
         return view('auth.verify-email');
@@ -89,6 +91,7 @@ Route::middleware(['auth'])->group(function () {
 // AUTH ROUTES (Login & Register)
 // ============================================
 Route::middleware('guest')->group(function () {
+    
     // Login Routes
     Route::get('/login/pasien', fn() => view('auth.login-pasien'))->name('login.pasien');
     Route::post('/login/pasien', [LoginController::class, 'loginPasien']);
@@ -130,6 +133,7 @@ Route::post('/logout', function () {
 // DASHBOARD ROUTES (DENGAN MIDDLEWARE AUTH + VERIFIED)
 // ============================================
 Route::middleware(['auth', 'verified'])->group(function () {
+    
     Route::get('/dashboard/admin', [DashboardController::class, 'admin'])
         ->name('dashboard.admin')
         ->middleware('role:admin');
@@ -151,6 +155,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // API ROUTES (AJAX)
 // ============================================
 Route::middleware(['auth'])->group(function () {
+    
     // Ambil semua data pasien (untuk dashboard perawat)
     Route::get('/api/pasiens', function () {
         $pasiens = App\Models\Pasien::with('dokter')->latest()->get();
@@ -203,13 +208,16 @@ Route::middleware(['auth'])->group(function () {
 // PASIEN ROUTES (Perawat only)
 // ============================================
 Route::middleware(['auth', 'role:perawat'])->group(function () {
+    
     Route::post('/pasien', [PasienController::class, 'store'])->name('pasien.store');
     Route::get('/pasien/{id}', [PasienController::class, 'show'])->name('pasien.show');
     Route::patch('/pasien/{id}/status', [PasienController::class, 'updateStatus'])->name('pasien.status');
     Route::post('/pasien/{id}/update-medis', [PasienController::class, 'updateMedis'])->name('pasien.update-medis');
+    
     // EDIT KELUHAN PASIEN
     Route::get('/pasien/{id}/edit-keluhan', [PasienController::class, 'editKeluhan'])->name('pasien.edit-keluhan');
     Route::put('/pasien/{id}/edit-keluhan', [PasienController::class, 'updateKeluhan'])->name('pasien.update-keluhan');
+    
     // KIRIM KE DOKTER
     Route::post('/pasien/{id}/kirim-ke-dokter', [PasienController::class, 'kirimKeDokter'])->name('pasien.kirim-ke-dokter');
 });
@@ -217,6 +225,7 @@ Route::middleware(['auth', 'role:perawat'])->group(function () {
 // ============================================
 // REKAM MEDIS ROUTES (Dokter & Pasien)
 // ============================================
+
 // Create & Store hanya untuk Dokter
 Route::middleware(['auth', 'role:dokter'])->group(function () {
     Route::get('/rekam-medis/create/{pasienId}', [RekamMedisController::class, 'create'])->name('rekam-medis.create');
@@ -292,3 +301,24 @@ Route::middleware(['auth', 'role:admin'])->prefix('logs')->group(function () {
 //     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 //     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 // });
+
+// ============================================
+// ENCRYPT OLD NIK
+// ============================================
+
+Route::get('/encrypt-old-nik', function () {
+
+    $users = User::all();
+
+    foreach ($users as $user) {
+
+        if ($user->nik) {
+
+            $user->nik = $user->nik;
+
+            $user->save();
+        }
+    }
+
+    return 'NIK lama berhasil dienkripsi';
+});

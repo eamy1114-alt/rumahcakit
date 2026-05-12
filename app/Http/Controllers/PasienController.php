@@ -25,15 +25,18 @@ class PasienController extends Controller
             'catatan_perawat' => 'nullable|string',
             'no_telp' => 'nullable|string',
             'alamat' => 'nullable|string',
+
+            // 🔥 TAMBAHAN
+            'dokter_id' => 'required|exists:users,id',
         ]);
-        
+
         $validated['perawat_id'] = auth()->id();
         $validated['status'] = 'menunggu';
-        
+
         Pasien::create($validated);
-        
+
         $this->logActivity('Menambah pasien baru: ' . $validated['nama_lengkap']);
-        
+
         return redirect()->route('dashboard.perawat')
             ->with('success', 'Data pasien berhasil ditambahkan!');
     }
@@ -152,7 +155,7 @@ class PasienController extends Controller
     /**
      * Kirim data pasien ke dokter (Perawat)
      */
-    public function kirimKeDokter($id)
+    public function kirimKeDokter(Request $request, $id)
     {
         $pasien = Pasien::findOrFail($id);
         
@@ -161,7 +164,7 @@ class PasienController extends Controller
             return response()->json(['success' => false, 'message' => 'Pasien sudah dikirim ke dokter sebelumnya.'], 400);
         }
         
-        $pasien->update(['status' => 'diproses']);
+        $pasien->update(['status' => 'diproses','dokter_id' => $request->dokter_id]);
         
         $this->logActivity('Mengirim data pasien ke dokter: ' . $pasien->nama_lengkap);
         
